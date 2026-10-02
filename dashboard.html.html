@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shaktiman Xerox — Orders Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap');
+
+  :root{
+    --paper: #EFE9DC;
+    --paper-dark: #E3DBC8;
+    --ink: #2B2A28;
+    --stamp: #A23B2E;
+    --line: #C9BFA6;
+    --ok: #3f6b3f;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', serif;
+  }
+
+  body{
+    min-height: 100vh;
+    padding: 32px 24px 64px;
+  }
+
+  .wrap{
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  header{
+    display:flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+  }
+
+  h1{
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    font-size: 26px;
+    margin: 0;
+  }
+
+  .eyebrow{
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--stamp);
+    margin: 0 0 4px;
+  }
+
+  .refresh-btn{
+    font-family: 'Courier Prime', monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--ink);
+    padding: 9px 16px;
+    cursor: pointer;
+  }
+
+  .refresh-btn:hover{
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .summary{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .summary-card{
+    background: var(--paper-dark);
+    border: 1px solid var(--line);
+    padding: 14px 16px;
+  }
+
+  .summary-card .num{
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    font-size: 26px;
+    display:block;
+  }
+
+  .summary-card .lbl{
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: #6b6355;
+  }
+
+  .controls{
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .controls input[type="text"],
+  .controls select{
+    font-family: 'Courier Prime', monospace;
+    font-size: 12.5px;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    background: var(--paper-dark);
+    color: var(--ink);
+  }
+
+  .controls input[type="text"]{
+    flex: 1;
+    min-width: 160px;
+  }
+
+  table{
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--paper-dark);
+    border: 1px solid var(--line);
+  }
+
+  thead th{
+    text-align: left;
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: #6b6355;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  tbody td{
+    padding: 12px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    vertical-align: top;
+  }
+
+  tbody tr:last-child td{
+    border-bottom: none;
+  }
+
+  tbody tr:hover{
+    background: var(--paper);
+  }
+
+  .service-tag{
+    font-family: 'Courier Prime', monospace;
+    font-size: 11.5px;
+  }
+
+  .option-tag{
+    display:block;
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    color: #6b6355;
+    margin-top: 2px;
+  }
+
+  .file-link{
+    font-family: 'Courier Prime', monospace;
+    font-size: 12.5px;
+    color: var(--stamp);
+    text-decoration: none;
+  }
+
+  .file-name-text{
+    display:block;
+    font-size: 13.5px;
+    word-break: break-all;
+    margin-bottom: 4px;
+  }
+
+  .file-actions{
+    display:flex;
+    gap: 14px;
+  }
+
+  .download-link{
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  .file-link:hover{
+    text-decoration: underline;
+  }
+
+  .status-select{
+    font-family: 'Courier Prime', monospace;
+    font-size: 11.5px;
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .status-select.new{ border-color: var(--stamp); color: var(--stamp); }
+  .status-select.done{ border-color: var(--ok); color: var(--ok); }
+
+  .timestamp{
+    font-family: 'Courier Prime', monospace;
+    font-size: 11.5px;
+    color: #6b6355;
+    white-space: nowrap;
+  }
+
+  .empty-state, .error-state{
+    text-align: center;
+    padding: 60px 20px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    color: #6b6355;
+  }
+
+  .error-state{ color: var(--stamp); }
+
+  @media (max-width: 720px){
+    .summary{ grid-template-columns: repeat(2, 1fr); }
+    table, thead, tbody, tr, td, th{ display: block; }
+    thead{ display:none; }
+    tbody tr{
+      border: 1px solid var(--line);
+      margin-bottom: 12px;
+      padding: 10px;
+    }
+    tbody td{
+      border: none;
+      padding: 6px 0;
+    }
+    tbody td::before{
+      content: attr(data-label);
+      display:block;
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      color: #6b6355;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+  }
+
+  /* ---------- Admin login ---------- */
+  .login-screen{
+    max-width: 380px;
+    margin: 12vh auto 0;
+    background: var(--paper-dark);
+    border: 1px solid var(--line);
+    padding: 32px 28px 28px;
+  }
+
+  .login-screen[hidden], .wrap[hidden]{ display:none; }
+
+  .login-screen h1{ font-size: 22px; margin-bottom: 18px; }
+
+  .login-screen label span{
+    display:block;
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: #6b6355;
+    margin-bottom: 5px;
+  }
+
+  .login-screen input{
+    width:100%;
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    margin-bottom: 14px;
+  }
+
+  .login-btn{
+    width:100%;
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    padding: 11px;
+    background: var(--stamp);
+    color: var(--paper-dark);
+    border: 1px solid var(--stamp);
+    cursor:pointer;
+  }
+
+  .login-btn:disabled{ opacity: 0.5; cursor: wait; }
+
+  .login-msg{
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--stamp);
+    min-height: 18px;
+    margin: 0 0 12px;
+  }
+
+  .header-actions{ display:flex; gap: 10px; }
+
+  .customer-name{ display:block; font-size: 14px; }
+
+  .customer-phone{
+    display:block;
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    color: #6b6355;
+    margin-top: 2px;
+  }
+
+  .customer-phone + .link-button{ margin-top: 4px; font-size: 11.5px; }
+
+  .guest-tag{
+    font-family: 'Courier Prime', monospace;
+    font-size: 11.5px;
+    color: #6b6355;
+  }
+
+  .link-button{
+    font-family: 'Courier Prime', monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    background: none;
+    border: none;
+    padding: 0;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .link-button:disabled{ opacity: 0.5; cursor: wait; }
+</style>
+</head>
+<body>
+
+  <div class="login-screen" id="loginScreen" hidden>
+    <p class="eyebrow">SHAKTIMAN XEROX</p>
+    <h1>Owner login</h1>
+    <form id="loginForm">
+      <label>
+        <span>ADMIN PASSWORD</span>
+        <input type="password" id="adminPassword" autocomplete="current-password">
+      </label>
+      <p class="login-msg" id="loginMsg" role="alert"></p>
+      <button class="login-btn" id="loginBtn" type="submit">Log in</button>
+    </form>
+  </div>
+
+  <div class="wrap" id="app" hidden>
+    <header>
+      <div>
+        <p class="eyebrow">SHAKTIMAN XEROX</p>
+        <h1>Orders Dashboard</h1>
+      </div>
+      <div class="header-actions">
+        <button class="refresh-btn" id="refreshBtn" type="button">Refresh</button>
+        <button class="refresh-btn" id="logoutBtn" type="button">Log out</button>
+      </div>
+    </header>
+
+    <div class="summary">
+      <div class="summary-card">
+        <span class="num" id="countTotal">–</span>
+        <span class="lbl">TOTAL</span>
+      </div>
+      <div class="summary-card">
+        <span class="num" id="countNew">–</span>
+        <span class="lbl">NEW</span>
+      </div>
+      <div class="summary-card">
+        <span class="num" id="countProgress">–</span>
+        <span class="lbl">IN PROGRESS</span>
+      </div>
+      <div class="summary-card">
+        <span class="num" id="countDone">–</span>
+        <span class="lbl">DONE</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="searchBox" placeholder="Search by file, customer or phone…">
+      <select id="serviceFilter">
+        <option value="">All services</option>
+      </select>
+      <select id="statusFilter">
+        <option value="">All statuses</option>
+        <option value="New">New</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Ready">Ready</option>
+        <option value="Done">Done</option>
+      </select>
+    </div>
+
+    <div id="tableWrap">
+      <div class="empty-state">Loading orders…</div>
+    </div>
+  </div>
+
+<script>
+  // ===================================================================
+  // Your Google Apps Script Web App URL (same one used in index.html)
+  // ===================================================================
+  var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyAQh-zu3sGvcUYIHblqtOyB3HpIZshimU2CBqPJ8drW-xI4Mjwm0bV6Zj6d46UQC9TIw/exec';
+
+  var TOKEN_KEY = 'xerox_admin_token';
+  var STATUSES = ['New', 'In Progress', 'Ready', 'Done'];
+  var token = null;
+  try { token = localStorage.getItem(TOKEN_KEY); } catch(e){ token = null; }
+  var allOrders = [];
+
+  function $(id){ return document.getElementById(id); }
+
+  function api(payload){
+    return fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    }).then(function(res){ return res.json(); });
+  }
+
+  // ---------- Login / logout ----------
+  function showLogin(message){
+    $('app').hidden = true;
+    $('loginScreen').hidden = false;
+    $('loginMsg').textContent = message || '';
+    $('adminPassword').focus();
+  }
+
+  function showApp(){
+    $('loginScreen').hidden = true;
+    $('app').hidden = false;
+    loadOrders();
+  }
+
+  function setToken(value){
+    token = value;
+    try {
+      if(value){ localStorage.setItem(TOKEN_KEY, value); }
+      else { localStorage.removeItem(TOKEN_KEY); }
+    } catch(e){}
+  }
+
+  function handleAuthExpired(){
+    setToken(null);
+    showLogin('Your session has expired. Please log in again.');
+  }
+
+  $('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = $('loginBtn');
+    btn.disabled = true;
+    $('loginMsg').textContent = 'Please wait…';
+
+    api({ action: 'adminLogin', password: $('adminPassword').value }).then(function(data){
+      btn.disabled = false;
+      if(data && data.status === 'success'){
+        $('adminPassword').value = '';
+        setToken(data.token);
+        showApp();
+      } else {
+        $('loginMsg').textContent = (data && data.message) || 'Login failed.';
+      }
+    }).catch(function(){
+      btn.disabled = false;
+      $('loginMsg').textContent = 'Could not reach the server. Please check your connection.';
+    });
+  });
+
+  $('logoutBtn').addEventListener('click', function(){
+    setToken(null);
+    allOrders = [];
+    showLogin('');
+  });
+
+  // ---------- Loading and rendering ----------
+  function loadOrders(){
+    $('tableWrap').innerHTML = '<div class="empty-state">Loading orders…</div>';
+
+    api({ action: 'adminList', token: token }).then(function(data){
+      if(!data || data.status !== 'success'){
+        if(data && data.code === 'auth'){ handleAuthExpired(); return; }
+        throw new Error((data && data.message) || 'Unexpected response');
+      }
+      allOrders = data.orders || [];
+      populateServiceFilter();
+      renderSummary();
+      renderTable();
+    }).catch(function(err){
+      $('tableWrap').innerHTML = '<div class="error-state">Could not load orders — ' + escapeHtml(err.message) + '</div>';
+    });
+  }
+
+  function populateServiceFilter(){
+    var select = $('serviceFilter');
+    var current = select.value;
+    var seen = {};
+    var services = [];
+    allOrders.forEach(function(o){
+      if(o.service && !seen[o.service]){ seen[o.service] = true; services.push(o.service); }
+    });
+    select.innerHTML = '<option value="">All services</option>' +
+      services.map(function(s){ return '<option value="' + escapeAttr(s) + '">' + escapeHtml(s) + '</option>'; }).join('');
+    select.value = current;
+  }
+
+  function renderSummary(){
+    function count(s){ return allOrders.filter(function(o){ return o.status === s; }).length; }
+    $('countTotal').textContent = allOrders.length;
+    $('countNew').textContent = count('New');
+    $('countProgress').textContent = count('In Progress');
+    $('countDone').textContent = count('Done');
+  }
+
+  function getFiltered(){
+    var search = $('searchBox').value.trim().toLowerCase();
+    var service = $('serviceFilter').value;
+    var status = $('statusFilter').value;
+
+    return allOrders.filter(function(o){
+      if(service && o.service !== service) return false;
+      if(status && o.status !== status) return false;
+      if(search){
+        var hay = ((o.fileName || '') + ' ' + (o.customerName || '') + ' ' + (o.customerPhone || '')).toLowerCase();
+        if(hay.indexOf(search) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  function safeDriveLink(url){
+    return /^https:\/\/drive\.google\.com\//.test(String(url || '')) ? url : '';
+  }
+
+  function renderTable(){
+    var rows = getFiltered();
+
+    if(!rows.length){
+      $('tableWrap').innerHTML = '<div class="empty-state">No orders match.</div>';
+      return;
+    }
+
+    var html = '<table><thead><tr>' +
+      '<th>Received</th><th>Customer</th><th>Service</th><th>File</th><th>Status</th>' +
+      '</tr></thead><tbody>';
+
+    rows.forEach(function(o){
+      var statusClass = o.status === 'New' ? 'new' : (o.status === 'Done' ? 'done' : '');
+      var link = safeDriveLink(o.fileLink);
+
+      html += '<tr>' +
+        '<td data-label="Received"><span class="timestamp">' + escapeHtml(formatDate(o.timestamp)) + '</span></td>' +
+        '<td data-label="Customer">' +
+          (o.customerName
+            ? '<span class="customer-name">' + escapeHtml(o.customerName) + '</span>' +
+              '<span class="customer-phone">' + escapeHtml(o.customerPhone) + '</span>' +
+              '<button class="link-button" type="button" data-reset="' + escapeAttr(o.customerPhone) + '" data-name="' + escapeAttr(o.customerName) + '">Reset password</button>'
+            : '<span class="guest-tag">Guest</span>') +
+        '</td>' +
+        '<td data-label="Service"><span class="service-tag">' + escapeHtml(o.service || '') + '</span>' +
+          (o.option ? '<span class="option-tag">' + escapeHtml(o.option) + '</span>' : '') +
+        '</td>' +
+        '<td data-label="File">' +
+          '<span class="file-name-text">' + escapeHtml(o.fileName || 'File') + '</span>' +
+          '<span class="file-actions">' +
+            '<button class="link-button" type="button" data-download="' + escapeAttr(o.orderId) + '">Download</button>' +
+            (link ? '<a class="file-link" href="' + escapeAttr(link) + '" target="_blank" rel="noopener">Open in Drive</a>' : '') +
+          '</span>' +
+        '</td>' +
+        '<td data-label="Status">' +
+          '<select class="status-select ' + statusClass + '" data-order-id="' + escapeAttr(o.orderId) + '">' +
+            STATUSES.map(function(s){
+              return '<option value="' + s + '"' + (o.status === s ? ' selected' : '') + '>' + s + '</option>';
+            }).join('') +
+          '</select>' +
+        '</td>' +
+      '</tr>';
+    });
+
+    html += '</tbody></table>';
+    $('tableWrap').innerHTML = html;
+  }
+
+  // ---------- Actions (event delegation) ----------
+  $('tableWrap').addEventListener('change', function(e){
+    var sel = e.target;
+    if(sel.classList && sel.classList.contains('status-select')){
+      updateStatus(sel.getAttribute('data-order-id'), sel.value, sel);
+    }
+  });
+
+  $('tableWrap').addEventListener('click', function(e){
+    var btn = e.target;
+    if(btn.getAttribute && btn.getAttribute('data-download')){
+      downloadOrder(btn.getAttribute('data-download'), btn);
+    } else if(btn.getAttribute && btn.getAttribute('data-reset')){
+      resetPassword(btn.getAttribute('data-reset'), btn.getAttribute('data-name'), btn);
+    }
+  });
+
+  function resetPassword(phone, name, btn){
+    var pw = prompt('Type a new password for ' + name + ' (at least 6 characters).\nThen tell the customer what it is.');
+    if(!pw) return;
+    btn.disabled = true;
+    api({ action: 'resetPassword', token: token, phone: phone, newPassword: pw }).then(function(data){
+      btn.disabled = false;
+      if(data && data.status === 'success'){
+        alert('Done. ' + name + ' can now log in with the new password.');
+      } else if(data && data.code === 'auth'){
+        handleAuthExpired();
+      } else {
+        alert((data && data.message) || 'Could not reset the password.');
+      }
+    }).catch(function(){
+      btn.disabled = false;
+      alert('Could not reach the server. Please check your connection.');
+    });
+  }
+
+  function updateStatus(orderId, status, selectEl){
+    selectEl.disabled = true;
+    api({ action: 'updateStatus', token: token, orderId: orderId, status: status }).then(function(data){
+      selectEl.disabled = false;
+      if(data && data.status === 'success'){
+        var order = allOrders.filter(function(o){ return o.orderId === orderId; })[0];
+        if(order) order.status = status;
+        selectEl.className = 'status-select ' + (status === 'New' ? 'new' : (status === 'Done' ? 'done' : ''));
+        renderSummary();
+      } else if(data && data.code === 'auth'){
+        handleAuthExpired();
+      } else {
+        alert((data && data.message) || 'Could not update status. Please try again.');
+        loadOrders();
+      }
+    }).catch(function(){
+      selectEl.disabled = false;
+      alert('Could not update status — check your connection.');
+    });
+  }
+
+  function downloadOrder(orderId, btn){
+    var label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Please wait…';
+
+    api({ action: 'getFile', token: token, orderId: orderId }).then(function(data){
+      btn.disabled = false;
+      btn.textContent = label;
+      if(!data || data.status !== 'success'){
+        if(data && data.code === 'auth'){ handleAuthExpired(); return; }
+        alert((data && data.message) || 'Could not download this file.');
+        return;
+      }
+      var bin = atob(data.data);
+      var bytes = new Uint8Array(bin.length);
+      for(var i = 0; i < bin.length; i++){ bytes[i] = bin.charCodeAt(i); }
+      var blob = new Blob([bytes], { type: data.mimeType || 'application/octet-stream' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = data.fileName || 'file';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 10000);
+    }).catch(function(){
+      btn.disabled = false;
+      btn.textContent = label;
+      alert('Could not download — check your connection.');
+    });
+  }
+
+  // ---------- Helpers ----------
+  function formatDate(value){
+    if(!value) return '';
+    var d = new Date(value);
+    if(isNaN(d.getTime())) return String(value);
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function escapeHtml(str){
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function escapeAttr(str){ return escapeHtml(str); }
+
+  $('refreshBtn').addEventListener('click', loadOrders);
+  $('searchBox').addEventListener('input', renderTable);
+  $('serviceFilter').addEventListener('change', renderTable);
+  $('statusFilter').addEventListener('change', renderTable);
+
+  // ---------- Start ----------
+  if(token){ showApp(); } else { showLogin(''); }
+</script>
+</body>
+</html>
